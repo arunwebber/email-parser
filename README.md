@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/arunwebber/email-parser/refs/heads/main/images/icon_128.png" alt="Email Parser Icon" width="128" height="128">
 </p>
 
-# Email Parser Chrome Extension
+# Email Extractor Chrome Extension
 
 This is a Chrome extension that extracts email addresses from the current page and provides functionalities to view, copy, and adjust the font size of the email list. It allows users to easily copy email addresses, change their font size, and manage selected text for customization.
 
