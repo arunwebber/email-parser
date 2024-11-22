@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Email Parser",
+    "name": "Email Capture",
     "version": "1.3",
-    "description": "Finds and displays emails from the current page.",
+    "description": "Finds and displays emails from the current page.And making it is easy to copy",
     "permissions": [
         "activeTab",
         "scripting"
