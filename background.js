@@ -1,7 +1,7 @@
 // background.js
 chrome.action.onClicked.addListener((tab) => {
     chrome.scripting.executeScript({
-        target: {tabId: tab.id},
+        target: { tabId: tab.id },
         function: extractEmails
     });
 });
@@ -17,3 +17,4 @@ function extractEmails() {
         console.log("Emails saved:", emails);
     });
 }
+

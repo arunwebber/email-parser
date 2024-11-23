@@ -1,4 +1,3 @@
-// This function runs when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
     // Request the content script to extract emails
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -38,17 +37,27 @@ function extractEmails() {
 function displayEmails(emails) {
     const container = document.getElementById('emailsContainer');
     container.innerHTML = ''; // Clear previous content
-    if (emails.length === 0) {
+
+    // Retrieve emails from localStorage
+    const storedEmails = JSON.parse(localStorage.getItem('parsedEmails')) || [];
+    const combinedEmails = [...new Set([...storedEmails, ...emails])]; // Combine and remove duplicates
+
+    if (combinedEmails.length === 0) {
         container.innerText = 'No emails found.';
         updateEmailCount(0); // Update count to 0 when no emails found
     } else {
-        const uniqueEmails = [...new Set(emails)]; // Remove duplicates using Set
-        uniqueEmails.forEach(email => {
+        combinedEmails.forEach(email => {
             const emailElement = document.createElement('div');
             emailElement.innerText = email;
             container.appendChild(emailElement);
         });
-        updateEmailCount(uniqueEmails.length); // Update count with the number of unique emails
+        updateEmailCount(combinedEmails.length); // Update count with the total number of emails
+    }
+
+    // Update the localStorage with the combined emails
+    const toggleStatus = localStorage.getItem('toggleStatus');
+    if (toggleStatus === 'on') {
+        localStorage.setItem('parsedEmails', JSON.stringify(combinedEmails));
     }
 }
 
@@ -89,7 +98,6 @@ function changeFontSize(increase = true) {
         emailsContainer.style.fontSize = increase ? (currentFontSize + 2) + 'px' : Math.max(10, currentFontSize - 2) + 'px';
     }
 }
-
 
 // Continuous font size change variables
 let fontSizeInterval;
@@ -165,3 +173,61 @@ function getCursorPosition(element) {
 document.getElementById('emailsContainer').addEventListener('input', updateStatus);
 document.getElementById('emailsContainer').addEventListener('click', updateStatus);
 document.getElementById('emailsContainer').addEventListener('keyup', updateStatus);
+
+const toggleButton = document.getElementById("toggleCaptureButton");
+
+// Initialize toggle button state based on localStorage
+const storedStatus = localStorage.getItem("toggleStatus");
+toggleButton.checked = storedStatus === "on";
+
+// Listen for toggle changes and update localStorage
+toggleButton.addEventListener("change", function () {
+    if (toggleButton.checked) {
+        localStorage.setItem("toggleStatus", "on");
+        console.log(localStorage.getItem("toggleStatus"));
+        keepStoring();
+    } else {
+        localStorage.setItem("toggleStatus", "off");
+        console.log(localStorage.getItem("toggleStatus"));
+        dontStore();
+    }
+});
+
+// Function to store parsed emails in localStorage
+function storeEmailsInLocalStorage(emails) {
+    const uniqueEmails = [...new Set(emails)]; // Remove duplicates using Set
+    localStorage.setItem('parsedEmails', JSON.stringify(uniqueEmails)); // Store as JSON string
+    console.log("Emails stored in localStorage:", uniqueEmails);
+}
+
+function keepStoring() {
+    const toggleStatus = localStorage.getItem("toggleStatus"); // Check the current toggle status
+    if (toggleStatus === "on") { // Only store emails when toggle is on
+        console.log("Keep storing");
+        // Fetch emails and store them
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.scripting.executeScript(
+                {
+                    target: { tabId: tabs[0].id },
+                    function: extractEmails,
+                },
+                (results) => {
+                    if (results && results[0] && results[0].result) {
+                        const emails = results[0].result;
+                        storeEmailsInLocalStorage(emails); // Store emails only when toggle is ON
+                    }
+                }
+            );
+        });
+    } else {
+        console.log("Don't store");
+        // If the toggle is off, clear the localStorage (or simply don't store new emails)
+        localStorage.removeItem("parsedEmails");
+    }
+}
+
+function dontStore() {
+    console.log("Don't store");
+    // If the toggle is off, clear the localStorage to avoid storing emails
+    localStorage.removeItem("parsedEmails");
+}
