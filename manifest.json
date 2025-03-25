@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Email Capture",
-    "version": "1.4",
+    "version": "1.4.2",
     "description": "Finds and displays emails from the current page. And making it easy to copy and save.",
     "permissions": [
         "activeTab",
